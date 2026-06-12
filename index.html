@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rifa Car-Kará Aerodesign · Ganhe um Drone!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0A1628;
+      --navy2:   #112240;
+      --orange:  #FF6B1A;
+      --orange2: #E05A10;
+      --white:   #FFFFFF;
+      --muted:   #8A9BB5;
+      --card:    #0F1E38;
+      --border:  #1E3358;
+      --green:   #28C76F;
+      --red:     #EA5455;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(10,22,40,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      color: var(--orange);
+    }
+    .nav-logo span { color: var(--white); }
+    .nav-badge {
+      background: var(--orange);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      text-transform: uppercase;
+    }
+
+    /* ─── HERO ────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      opacity: 0.07;
+      pointer-events: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      color: var(--orange);
+    }
+    .hero-grid span {
+      display: flex; align-items: center; justify-content: center;
+      animation: flicker 4s infinite;
+      animation-delay: calc(var(--i) * 0.12s);
+    }
+    @keyframes flicker {
+      0%,90%,100% { opacity: 1; }
+      95% { opacity: 0.1; }
+    }
+
+    .hero-tag {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 7rem);
+      line-height: 0.95;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--orange);
+      display: block;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.6;
+      margin-bottom: 48px;
+    }
+    .hero-price {
+      display: inline-flex; align-items: baseline; gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 40px;
+      margin-bottom: 40px;
+    }
+    .hero-price .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .hero-price .amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      color: var(--orange);
+      line-height: 1;
+    }
+    .hero-price .cents { font-size: 1.5rem; color: var(--orange); }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--orange);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-decoration: none;
+      padding: 16px 48px;
+      border-radius: 8px;
+      border: none; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--orange2); transform: translateY(-2px); }
+
+    .hero-stats {
+      display: flex; gap: 48px; margin-top: 56px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .stat { text-align: center; }
+    .stat .n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      color: var(--white);
+    }
+    .stat .n span { color: var(--orange); }
+    .stat .l { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ─── RIFA IMAGE SECTION ──────────────────── */
+    .section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .section-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.7; max-width: 600px; }
+
+    .rifa-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      margin-top: 48px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .rifa-image-slot {
+      background: var(--navy2);
+      min-height: 380px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      padding: 32px;
+    }
+    /* Placeholder que some quando há imagem real */
+    .rifa-image-slot .placeholder {
+      text-align: center;
+      color: var(--muted);
+    }
+    .rifa-image-slot .placeholder svg { opacity: 0.3; margin-bottom: 16px; }
+    .rifa-image-slot .placeholder p { font-size: 0.85rem; }
+    .rifa-image-slot img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    /* ↑ Substitua o conteúdo de .rifa-image-slot pela sua imagem */
+
+    .rifa-info { padding: 48px 40px 48px 0; }
+    .rifa-info h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+    }
+    .rifa-info p { color: var(--muted); line-height: 1.7; font-size: 0.95rem; margin-bottom: 24px; }
+    .features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+    .features li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.9rem; color: var(--white);
+    }
+    .features li::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--orange);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chip {
+      display: inline-block;
+      background: rgba(255,107,26,0.15);
+      color: var(--orange);
+      border: 1px solid rgba(255,107,26,0.3);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── DIVIDER ─────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0 24px;
+    }
+
+    /* ─── FORM SECTION ────────────────────────── */
+    .form-section {
+      max-width: 800px; margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px;
+    }
+
+    .field { margin-bottom: 24px; }
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--orange); }
+    .field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+
+    /* Number Picker */
+    .number-picker-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .number-picker-header label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      width: 200px;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 12px 7px 32px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--orange); }
+    .search-wrap::before {
+      content: '🔍';
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      font-size: 0.75rem; pointer-events: none;
+    }
+
+    .selected-summary {
+      font-size: 0.82rem;
+      color: var(--orange);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+      gap: 6px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .number-grid::-webkit-scrollbar { width: 6px; }
+    .number-grid::-webkit-scrollbar-track { background: var(--navy2); border-radius: 3px; }
+    .number-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .num-btn {
+      aspect-ratio: 1;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .num-btn:hover:not(.taken) {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    .num-btn.selected {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--white);
+    }
+    .num-btn.taken {
+      background: rgba(138,155,181,0.08);
+      border-color: transparent;
+      color: rgba(138,155,181,0.3);
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color: var(--orange);
+      background: rgba(255,107,26,0.05);
+    }
+    .upload-area input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-area .icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-area p { font-size: 0.85rem; color: var(--muted); }
+    .upload-area p strong { color: var(--white); }
+    .upload-preview {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: rgba(40,199,111,0.1);
+      border: 1px solid rgba(40,199,111,0.3);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--green);
+    }
+
+    .total-box {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .total-box .label { font-size: 0.85rem; color: var(--muted); }
+    .total-box .value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--orange);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--orange);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+      padding: 16px;
+      border-radius: 8px;
+      border: none; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-transform: uppercase;
+    }
+    .btn-submit:hover { background: var(--orange2); transform: translateY(-2px); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Pix info */
+    .pix-box {
+      background: rgba(255,107,26,0.08);
+      border: 1px solid rgba(255,107,26,0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .pix-box .pix-label { font-size: 0.75rem; color: var(--orange); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .pix-box .pix-key { font-size: 1rem; font-weight: 600; color: var(--white); word-break: break-all; }
+    .pix-box .pix-name { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+    /* ─── BUYERS LIST ─────────────────────────── */
+    .buyers-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    .buyers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .buyer-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .buyer-card:hover { border-color: rgba(255,107,26,0.4); }
+    .buyer-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--white);
+    }
+    .buyer-numbers {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .buyer-number {
+      background: rgba(255,107,26,0.12);
+      border: 1px solid rgba(255,107,26,0.25);
+      color: var(--orange);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ─── TOAST ───────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 14px 24px;
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+    .toast.error { background: var(--red); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ─── FOOTER ──────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer strong { color: var(--orange); }
+
+    /* ─── LOADING ─────────────────────────────── */
+    .loading-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(10,22,40,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── RESPONSIVE ──────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .hero-grid { display: none; }
+      .rifa-card { grid-template-columns: 1fr; }
+      .rifa-image-slot { border-right: none; border-bottom: 1px solid var(--border); min-height: 260px; }
+      .rifa-info { padding: 32px 24px; }
+      .form-card { padding: 28px 20px; }
+      .hero-stats { gap: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── LOADING ─── -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p style="color:var(--muted);font-size:.9rem">Enviando sua participação…</p>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="nav-logo">Car-Kará <span>Aerodesign</span></div>
+  <div class="nav-badge">🎯 Rifa Ativa</div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-grid" id="heroGrid"></div>
+
+  <div class="hero-tag">✈️ Car-Kará Aerodesign · UFRN</div>
+  <h1>Rifa de<em>Drone</em></h1>
+  <p class="hero-sub">
+    Apoie a equipe de aerodesign da UFRN e concorra a um incrível drone.
+    Cada número custa apenas R$&nbsp;10 — quanto mais, maiores as suas chances!
+  </p>
+
+  <div class="hero-price">
+    <span class="label">Cada rifa</span>
+    <span class="amount">R$&nbsp;10</span>
+  </div>
+
+  <a href="#formulario" class="btn-primary">Garantir minha rifa →</a>
+
+  <div class="hero-stats">
+    <div class="stat"><div class="n">1<span>000</span></div><div class="l">Números totais</div></div>
+    <div class="stat"><div class="n" id="statSold">0</div><div class="l">Vendidos</div></div>
+    <div class="stat"><div class="n" id="statAvail">1000</div><div class="l">Disponíveis</div></div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── RIFA IMAGE ─── -->
+<div class="section">
+  <div class="section-label">O Prêmio</div>
+  <h2 class="section-title">Ganhe um Drone</h2>
+  <p class="section-desc">Um prêmio incrível para o sortudo(a) ganhador(a). Confira a imagem oficial da rifa abaixo.</p>
+
+  <div class="rifa-card">
+    <!-- ████████████████████████████████████████
+         ESPAÇO RESERVADO PARA A IMAGEM DA RIFA
+         Para adicionar sua imagem, substitua o conteúdo
+         dentro de .rifa-image-slot pelo elemento:
+         <img src="SUA_IMAGEM.jpg" alt="Rifa Car-Kará Aerodesign" />
+         ████████████████████████████████████████ -->
+    <div class="rifa-image-slot" id="rifaImageSlot">
+      <div class="placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p><strong style="color:var(--white)">Imagem da Rifa</strong><br/>Insira a imagem aqui no código<br/>(veja o comentário no HTML)</p>
+      </div>
+    </div>
+
+    <div class="rifa-info">
+      <h3>Drone · Edição Especial</h3>
+      <p>Equipamento de alta qualidade sorteado ao final da campanha. O ganhador será anunciado ao vivo nas redes sociais do Car-Kará Aerodesign.</p>
+      <ul class="features">
+        <li>Câmera de alta resolução</li>
+        <li>Bateria de longa duração</li>
+        <li>Controle remoto incluso</li>
+        <li>Entrega para todo o Brasil</li>
+      </ul>
+      <span class="chip">1 único ganhador</span>
+      &nbsp;
+      <span class="chip">Sorteio transmitido ao vivo</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── FORM ─── -->
+<div class="form-section" id="formulario">
+  <div class="section-label">Participar</div>
+  <h2 class="section-title" style="margin-bottom:8px">Reserve seus números</h2>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:40px;line-height:1.6">
+    Preencha os dados abaixo, escolha seus números e envie o comprovante do Pix.
+    Confirmação feita em até 24h.
+  </p>
+
+  <div class="form-card">
+
+    <!-- PIX INFO -->
+    <div class="pix-box">
+      <div class="pix-label">Chave Pix para pagamento</div>
+      <!-- ★ SUBSTITUA PELA SUA CHAVE PIX ★ -->
+      <div class="pix-key">carkara.aerodesign@email.com</div>
+      <div class="pix-name">Car-Kará Aerodesign · UFRN</div>
+    </div>
+
+    <div class="field">
+      <label>Nome completo *</label>
+      <input type="text" id="nomeCompleto" placeholder="Ex: João da Silva" />
+    </div>
+
+    <div class="field">
+      <label>Contato (WhatsApp ou e-mail) *</label>
+      <input type="text" id="contato" placeholder="Ex: (84) 99999-9999 ou email@exemplo.com" />
+    </div>
+
+    <!-- NUMBER PICKER -->
+    <div class="field">
+      <div class="number-picker-header">
+        <label>Escolha seus números (1 – 1000) *</label>
+        <div class="search-wrap">
+          <input type="text" id="searchNum" placeholder="Buscar número…" inputmode="numeric" />
+        </div>
+      </div>
+      <div class="selected-summary" id="selectedSummary">Nenhum número selecionado</div>
+      <div class="number-grid" id="numberGrid"></div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="total-box">
+      <span class="label">Total a pagar</span>
+      <span class="value" id="totalValue">R$ 0,00</span>
+    </div>
+
+    <!-- COMPROVANTE -->
+    <div class="field">
+      <label>Comprovante Pix *</label>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="comprovante" accept="image/*,application/pdf" />
+        <div class="icon">📎</div>
+        <p><strong>Clique ou arraste</strong> o comprovante aqui<br/>PNG, JPG ou PDF — máx. 5 MB</p>
+      </div>
+      <div class="upload-preview" id="uploadPreview"></div>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">
+      ✅ Confirmar participação
+    </button>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── BUYERS ─── -->
+<div class="buyers-section">
+  <div class="section-label">Participantes</div>
+  <h2 class="section-title">Quem já garantiu sua sorte</h2>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:8px">Os nomes estão parcialmente ocultados para privacidade.</p>
+  <div class="buyers-grid" id="buyersGrid">
+    <div class="empty-state">
+      <div class="big">🎲</div>
+      Nenhuma participação ainda. Seja o primeiro!
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  Rifa organizada por <strong>Car-Kará Aerodesign · UFRN</strong> &nbsp;|&nbsp;
+  Dúvidas? Entre em contato pelo WhatsApp ou Instagram da equipe.
+</footer>
+
+<!-- ─────────────────────────────────────────────────────
+  CONFIGURAÇÃO DO BANCO DE DADOS (SUPABASE)
+  Veja o arquivo README_BANCO.md para instruções completas.
+  Substitua as duas linhas abaixo pelos seus dados do Supabase.
+───────────────────────────────────────────────────── -->
+<script>
+  // ★ COLE AQUI A URL E A ANON KEY DO SEU PROJETO SUPABASE ★
+  const SUPABASE_URL  = 'https://hqnrtlnhrsucieylaoth.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxbnJ0bG5ocnN1Y2lleWxhb3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjk0OTUsImV4cCI6MjA5NjgwNTQ5NX0.VdEB-Hllh5r1lfR6XlX8gaTNaNEX9tuHWkN-QEdNZJ4';
+
+  // ─── Inicializa cliente ─────────────────────────────
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ─── Estado local ────────────────────────────────────
+  let takenNumbers = new Set();
+  let selectedNumbers = new Set();
+
+  // ─── Hero grid animado ───────────────────────────────
+  const grid = document.getElementById('heroGrid');
+  for (let i = 0; i < 200; i++) {
+    const s = document.createElement('span');
+    s.style.setProperty('--i', i);
+    s.textContent = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    grid.appendChild(s);
+  }
+
+  // ─── Constrói grade de números ───────────────────────
+  function buildGrid(filter = '') {
+    const g = document.getElementById('numberGrid');
+    g.innerHTML = '';
+    for (let i = 1; i <= 1000; i++) {
+      const s = String(i).padStart(3, '0');
+      if (filter && !s.includes(filter.padStart ? filter : filter)) continue;
+      const btn = document.createElement('button');
+      btn.className = 'num-btn' + (takenNumbers.has(i) ? ' taken' : '') + (selectedNumbers.has(i) ? ' selected' : '');
+      btn.textContent = s;
+      btn.dataset.n = i;
+      if (!takenNumbers.has(i)) btn.onclick = () => toggleNumber(i, btn);
+      g.appendChild(btn);
+    }
+  }
+
+  document.getElementById('searchNum').addEventListener('input', e => {
+    buildGrid(e.target.value.trim());
+  });
+
+  function toggleNumber(n, btn) {
+    if (selectedNumbers.has(n)) { selectedNumbers.delete(n); btn.classList.remove('selected'); }
+    else { selectedNumbers.add(n); btn.classList.add('selected'); }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const arr = [...selectedNumbers].sort((a,b) => a-b);
+    const el = document.getElementById('selectedSummary');
+    el.textContent = arr.length
+      ? `${arr.length} número(s) selecionado(s): ${arr.map(n=>String(n).padStart(3,'0')).join(', ')}`
+      : 'Nenhum número selecionado';
+    document.getElementById('totalValue').textContent =
+      `R$ ${(arr.length * 10).toFixed(2).replace('.', ',')}`;
+  }
+
+  // ─── Upload comprovante ──────────────────────────────
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput  = document.getElementById('comprovante');
+  const preview    = document.getElementById('uploadPreview');
+
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (f) {
+      preview.style.display = 'block';
+      preview.textContent = `✅ ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+    }
+  });
+  ['dragover','dragenter'].forEach(e => uploadArea.addEventListener(e, ev => { ev.preventDefault(); uploadArea.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(e => uploadArea.addEventListener(e, () => uploadArea.classList.remove('dragover')));
+
+  // ─── Carregar participações ──────────────────────────
+  async function loadBuyers() {
+    const { data, error } = await db.from('participacoes').select('*').eq('confirmado', true).order('created_at', { ascending: false });
+    if (error) { console.warn('Supabase não configurado ainda.', error.message); return; }
+    renderBuyers(data || []);
+    const allNums = (data || []).flatMap(r => r.numeros || []);
+    takenNumbers = new Set(allNums);
+    buildGrid();
+    const sold = allNums.length;
+    document.getElementById('statSold').textContent = sold;
+    document.getElementById('statAvail').textContent = 1000 - sold;
+  }
+
+  function maskName(fullName) {
+    if (!fullName) return '***';
+    const first = fullName.trim().split(' ')[0];
+    return first[0].toUpperCase() + '*'.repeat(Math.max(first.length - 1, 2));
+  }
+
+  function renderBuyers(list) {
+    const g = document.getElementById('buyersGrid');
+    if (!list.length) {
+      g.innerHTML = '<div class="empty-state"><div class="big">🎲</div>Nenhuma participação ainda. Seja o primeiro!</div>';
+      return;
+    }
+    g.innerHTML = list.map(p => `
+      <div class="buyer-card">
+        <div class="buyer-name">${maskName(p.nome_completo)}</div>
+        <div class="buyer-numbers">
+          ${(p.numeros||[]).map(n=>`<span class="buyer-number">${String(n).padStart(3,'0')}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ─── Enviar formulário ───────────────────────────────
+  async function submitForm() {
+    const nome     = document.getElementById('nomeCompleto').value.trim();
+    const contato  = document.getElementById('contato').value.trim();
+    const file     = fileInput.files[0];
+    const nums     = [...selectedNumbers];
+
+    if (!nome)    { showToast('Preencha seu nome completo.', true); return; }
+    if (!contato) { showToast('Preencha seu contato.', true); return; }
+    if (!nums.length) { showToast('Selecione pelo menos 1 número.', true); return; }
+    if (!file)    { showToast('Anexe o comprovante Pix.', true); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('Arquivo muito grande. Máx 5 MB.', true); return; }
+
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.getElementById('btnSubmit').disabled = true;
+
+    try {
+      // 1. Upload do comprovante no Storage
+      const ext = file.name.split('.').pop();
+      const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await db.storage.from('comprovantes').upload(path, file);
+      if (upErr) throw new Error('Erro no upload: ' + upErr.message);
+
+      // 2. Salvar no banco
+      const { error: dbErr } = await db.from('participacoes').insert({
+        nome_completo: nome,
+        contato: contato,
+        numeros: nums,
+        comprovante_path: path,
+        confirmado: false   // ← você confirma manualmente no painel Supabase
+      });
+      if (dbErr) throw new Error('Erro ao salvar: ' + dbErr.message);
+
+      showToast('🎉 Participação enviada! Aguarde a confirmação.');
+      // Limpar
+      document.getElementById('nomeCompleto').value = '';
+      document.getElementById('contato').value = '';
+      fileInput.value = '';
+      preview.style.display = 'none';
+      selectedNumbers.clear();
+      updateSummary();
+      await loadBuyers();
+      buildGrid();
+    } catch (err) {
+      showToast(err.message, true);
+    } finally {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      document.getElementById('btnSubmit').disabled = false;
+    }
+  }
+
+  // ─── Toast ───────────────────────────────────────────
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  // ─── Init ─────────────────────────────────────────────
+  buildGrid();
+  loadBuyers();
+</script>
+</body>
+</html>
