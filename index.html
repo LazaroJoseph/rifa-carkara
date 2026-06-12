@@ -496,6 +496,27 @@
     }
     .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
 
+/* ─── SELECT INDICADOR ───────────────────── */
+    .field select {
+      width: 100%;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A9BB5' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      transition: border-color 0.2s;
+    }
+    .field select:focus { border-color: var(--orange); }
+    .field select option { background: var(--navy2); color: var(--white); }
+
     /* ─── TOAST ───────────────────────────────── */
     .toast {
       position: fixed;
@@ -657,6 +678,24 @@
     <div class="field">
       <label>Contato (WhatsApp ou e-mail) *</label>
       <input type="text" id="contato" placeholder="Ex: (84) 99999-9999 ou email@exemplo.com" />
+    </div>
+
+    <!-- INDICADOR -->
+    <div class="field">
+      <label>Quem te indicou?</label>
+      <select id="indicador">
+        <option value="Nenhum">Nenhum</option>
+        <option value="Eriberto">Eriberto</option>
+        <option value="João Batista">João Batista</option>
+        <option value="João Paulo">João Paulo</option>
+        <option value="Jônatas">Jônatas</option>
+        <option value="Lázaro">Lázaro</option>
+        <option value="Lucas">Lucas</option>
+        <option value="Márcia">Márcia</option>
+        <option value="Masquerano">Masquerano</option>
+        <option value="Raimundo">Raimundo</option>
+        <option value="Sammy">Sammy</option>
+      </select>
     </div>
 
     <!-- NUMBER PICKER -->
@@ -832,6 +871,7 @@
   async function submitForm() {
     const nome     = document.getElementById('nomeCompleto').value.trim();
     const contato  = document.getElementById('contato').value.trim();
+    const indicador = document.getElementById('indicador').value;
     const file     = fileInput.files[0];
     const nums     = [...selectedNumbers];
 
@@ -856,6 +896,7 @@
         nome_completo: nome,
         contato: contato,
         numeros: nums,
+        indicador: indicador,
         comprovante_path: path,
         confirmado: false   // ← você confirma manualmente no painel Supabase
       });
